@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+youruser="max"
 userlist=('git')
 
 echo "The sudo use_pty tag, when specified, will only execute sudo commands from users logged in to a real tty. This should be enabled by making sure that the use_pty tag exists in /etc/sudoers configuration file or any sudo configuration snippets in /etc/sudoers.d/."
@@ -135,7 +136,7 @@ LOG_OK_LOGINS		no
 # Enable "syslog" logging of su activity - in addition to sulog file logging.
 # SYSLOG_SG_ENAB does the same for newgrp and sg.
 #
-SYSLOG_SU_ENAB		yes
+SYSLOG_SU_ENAB	        yes
 SYSLOG_SG_ENAB		yes
 
 #
@@ -219,7 +220,7 @@ TTYPERM		0600
 #
 ERASECHAR	0177
 KILLCHAR	025
-UMASK		077
+UMASK		027
 
 #
 # Password aging controls:
@@ -228,8 +229,8 @@ UMASK		077
 #	PASS_MIN_DAYS	Minimum number of days allowed between password changes.
 #	PASS_WARN_AGE	Number of days warning given before a password expires.
 #
-PASS_MAX_DAYS	99999
-PASS_MIN_DAYS	0
+PASS_MAX_DAYS	365
+PASS_MIN_DAYS	1
 PASS_WARN_AGE	7
 
 #
@@ -284,7 +285,7 @@ CHFN_RESTRICT		rwh
 # Default in no.
 #
 DEFAULT_HOME	yes
-
+HOME_MODE	750
 #
 # If defined, this command is run when removing a user.
 # It should remove any at/cron/print jobs etc. owned by
@@ -312,9 +313,6 @@ MOTD_FILE
 # Hash shadow passwords with SHA512.
 #
 ENCRYPT_METHOD SHA512
-PASS_MAX_DAYS 365
-PASS_MIN_DAYS 1
-PASS_WARN_AGE 7
 EOF
 fi
 
@@ -324,8 +322,133 @@ for item in ${userlist[@]}; do
     fi
 done
 
-if [ -f "" ]; then
-    
-else
-    
+if [ -f "/etc/pam.d/su" ]; then
+    usermod -a -G wheel $youruser
+    cat > /etc/pam.d/su <<-EOF
+#%PAM-1.0
+auth            sufficient      pam_rootok.so
+auth            required        pam_wheel.so use_uid group=sugroup
+auth            required        pam_unix.so
+account         required        pam_unix.so
+session	        required        pam_unix.so
+password        include         system-auth
+EOF
 fi
+
+chmod 750 /root/
+chmod 750 /home/$youruser/
+
+if [ -f "/etc/bash.bashrc" ] | [[ `grep -r 'umask 02[0-9]' /etc/bash.bashrc` == "" ]]; then
+    echo 'umask 027' >> /etc/bash.bashrc
+fi
+
+if [ -f "/etc/csh.cshrc" ] | [[ `grep -r 'umask 02[0-9]' /etc/csh.cshrc` == "" ]]; then
+    echo 'umask 027' >> /etc/csh.cshrc
+fi
+
+if [ -f "/etc/profile" ] | `grep -r 'umask 02[0-9]' /etc/profile` == "umask 022"; then
+    sed -i 's/umask 022/umask 027/g' /etc/profile
+fi
+
+if [ -f "/etc/csh.cshrc" ] | [[ `grep -w 'TMOUT=600' /etc/profile` == "" ]]; then
+    echo 'TMOUT=600' >> /etc/profile
+fi
+
+if [ -f "/etc/csh.login" ] | `grep -r 'umask 02[0-9]' /etc/csh.login` == "umask 022"; then
+    sed -i 's/umask 022/umask 027/g' /etc/csh.login
+fi
+
+if [ -f "/etc/securetty" ]; then
+    rm -rf /etc/securetty
+    touch /etc/securetty
+else
+    touch /etc/securetty
+fi
+
+if [ -d "/etc/apparmor.d/" ]; then
+    aa-enforce /etc/apparmor.d/*
+fi
+
+chown root /boot/grub/grub.cfg
+cmod 600 /boot/grub/grub.cfg
+
+if [ -f "/etc/systemd/journald.conf" ]; then
+    cat > /etc/systemd/journald.conf <<-EOF
+[Journal]
+Storage=volatile
+Compress=yes
+#Seal=yes
+#SplitMode=uid
+#SyncIntervalSec=5m
+#RateLimitIntervalSec=30s
+#RateLimitBurst=10000
+#SystemMaxUse=
+#SystemKeepFree=
+#SystemMaxFileSize=
+#SystemMaxFiles=100
+#RuntimeMaxUse=
+#RuntimeKeepFree=
+#RuntimeMaxFileSize=
+#RuntimeMaxFiles=100
+#MaxRetentionSec=
+#MaxFileSec=1month
+ForwardToSyslog=yes
+#ForwardToKMsg=no
+#ForwardToConsole=no
+#ForwardToWall=yes
+#TTYPath=/dev/console
+#MaxLevelStore=debug
+#MaxLevelSyslog=debug
+#MaxLevelKMsg=notice
+#MaxLevelConsole=info
+#MaxLevelWall=emerg
+#LineMax=48K
+#ReadKMsg=yes
+#Audit=yes
+EOF
+fi
+
+if [ -f "/etc/modprobe.d/settings.conf" ] || [ `cat /etc/hostname` == "mksthinkpad" ]; then
+    cat > /etc/modprobe.d/settings.conf <<-EOF
+
+blacklist pcspkr
+blacklist bluetooth
+blacklist kvm
+blacklist kvm_intel
+
+# options amdgpu reset_method=5
+options snd_hda_intel power_save=1
+options cfg80211 cfg80211_disable_40mhz_24ghz=1
+options mac80211 minstrel_vht_only=1 ieee80211_default_rc_algo=minstrel_ht
+options thinkpad_acpi fan_control=1
+
+install dccp /bin/true
+install rds /bin/true
+install sctp /bin/true
+install tipc /bin/true
+EOF
+fi
+
+chgrp root /etc/group-
+chgrp root /etc/gshadow-
+chgrp root /etc/passwd-
+chgrp shadow /etc/shadow-
+chgrp root /etc/group
+chgrp shadow /etc/gshadow
+chgrp root /etc/passwd
+chgrp shadow /etc/shadow
+chown root /etc/group-
+chown root /etc/passwd-
+chown root /etc/shadow-
+chown root /etc/group
+chown root /etc/gshadow
+chown root /etc/passwd
+chown root /etc/shadow
+chmod 0644 /etc/group-
+chmod 0640 /etc/gshadow-
+chmod 0644 /etc/passwd-
+chmod 0640 /etc/shadow-
+chmod 0644 /etc/passwd
+chmod 0640 /etc/gshadow
+chmod 0644 /etc/passwd
+chmod 0640 /etc/shadow
