@@ -410,11 +410,11 @@ fi
 
 if [ -f "/etc/modprobe.d/settings.conf" ] || [ `cat /etc/hostname` == "mksthinkpad" ]; then
     cat > /etc/modprobe.d/settings.conf <<-EOF
-
 blacklist pcspkr
 blacklist bluetooth
 blacklist kvm
 blacklist kvm_intel
+blacklist kvm_amd
 
 # options amdgpu reset_method=5
 options snd_hda_intel power_save=1
@@ -426,29 +426,41 @@ install dccp /bin/true
 install rds /bin/true
 install sctp /bin/true
 install tipc /bin/true
+install cramfs /bin/true
+install freevxfs /bin/true
+install hfs /bin/true
+install hfsplus /bin/true
+install jffs2 /bin/true
+install udf /bin/true
 EOF
 fi
 
-chgrp root /etc/group-
-chgrp root /etc/gshadow-
-chgrp root /etc/passwd-
-chgrp shadow /etc/shadow-
-chgrp root /etc/group
-chgrp shadow /etc/gshadow
-chgrp root /etc/passwd
-chgrp shadow /etc/shadow
-chown root /etc/group-
-chown root /etc/passwd-
-chown root /etc/shadow-
-chown root /etc/group
-chown root /etc/gshadow
-chown root /etc/passwd
-chown root /etc/shadow
-chmod 0644 /etc/group-
-chmod 0640 /etc/gshadow-
-chmod 0644 /etc/passwd-
-chmod 0640 /etc/shadow-
-chmod 0644 /etc/passwd
-chmod 0640 /etc/gshadow
-chmod 0644 /etc/passwd
-chmod 0640 /etc/shadow
+if [ -f "/etc/fstab" ] | [[ `grep -w '/dev/shm' /etc/fstab` == "" ]]; then
+    echo 'tmpfs /dev/shm tmpfs default,noatime,nosuid,mode=1777 0 0' >> /etc/fstab
+fi
+
+if [ -f "/etc/fstab" ] | [[ `grep -w 'tmpfs                                     /tmp           tmpfs   tmpfs defaults,noatime,mode=1777 0 0' /etc/fstab 
+tmpfs` == "tmpfs                                     /tmp           tmpfs   tmpfs defaults,noatime,mode=1777 0 0' /etc/fstab 
+tmpfs" ]] ; then
+    sed -i 's/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,mode=1777\ 0\ 0/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,nosuid,noexec,mode=1777\ 0\ 0/g' /etc/fstab
+fi
+
+chgrp root /etc/group- && chgrp root /etc/gshadow- && chgrp root /etc/passwd- && chgrp shadow /etc/shadow-
+chgrp root /etc/group && chgrp shadow /etc/gshadow && chgrp root /etc/passwd
+chgrp shadow /etc/shadow && chown root /etc/group- && chown root /etc/passwd-
+chown root /etc/shadow- && chown root /etc/group && chown root /etc/gshadow
+chown root /etc/passwd && chown root /etc/shadow && chmod 0644 /etc/group- && chmod 0640 /etc/gshadow-
+chmod 0644 /etc/passwd- && chmod 0640 /etc/shadow- && chmod 0644 /etc/passwd
+chmod 0640 /etc/gshadow && chmod 0644 /etc/passwd && chmod 0640 /etc/shadow
+touch /etc/at.allow && chgrp root /etc/at.allow && chown root /etc/at.allow
+touch /etc/cron.allow && chgrp root /etc/cron.allow && chown root /etc/cron.allow
+chmod 0640 /etc/at.allow && chmod 0640 /etc/cron.allow && chgrp root /etc/cron.d
+chgrp root /etc/cron.daily && chgrp root /etc/cron.hourly && chgrp root /etc/cron.monthly
+chgrp root /etc/cron.weekly && chgrp root /etc/crontab && chown root /etc/cron.d
+chown root /etc/cron.daily && chown root /etc/cron.hourly && chown root /etc/cron.monthly
+chown root /etc/cron.weekly && chown root /etc/crontab && chmod 0700 /etc/cron.d
+chmod 0700 /etc/cron.daily && chmod 0700 /etc/cron.hourly && chmod 0700 /etc/cron.monthly
+chmod 0700 /etc/cron.weekly && chmod 0600 /etc/crontab && rm /etc/hosts.equiv
+chmod 0600 /etc/ssh/* && chmod 0640 /etc/ssh/*_key && chmod 0644 /etc/ssh/*.pub
+
+
