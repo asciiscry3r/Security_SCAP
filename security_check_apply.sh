@@ -370,7 +370,7 @@ if [ -d "/etc/apparmor.d/" ]; then
 fi
 
 chown root /boot/grub/grub.cfg
-cmod 600 /boot/grub/grub.cfg
+chmod 0600 /boot/grub/grub.cfg
 
 if [ -f "/etc/systemd/journald.conf" ]; then
     cat > /etc/systemd/journald.conf <<-EOF
@@ -439,10 +439,12 @@ if [ -f "/etc/fstab" ] | [[ `grep -w '/dev/shm' /etc/fstab` == "" ]]; then
     echo 'tmpfs /dev/shm tmpfs default,noatime,nosuid,mode=1777 0 0' >> /etc/fstab
 fi
 
-if [ -f "/etc/fstab" ] | [[ `grep -w 'tmpfs                                     /tmp           tmpfs   tmpfs defaults,noatime,mode=1777 0 0' /etc/fstab 
-tmpfs` == "tmpfs                                     /tmp           tmpfs   tmpfs defaults,noatime,mode=1777 0 0' /etc/fstab 
-tmpfs" ]] ; then
-    sed -i 's/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,mode=1777\ 0\ 0/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,nosuid,noexec,mode=1777\ 0\ 0/g' /etc/fstab
+if [ -f "/etc/fstab" ] | [[ `grep -w 'defaults,noatime,mode=1777' /etc/fstab` == "defaults,noatime,mode=1777" ]] ; then
+    sed -i 's/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,mode=1777\ 0\ 0/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,no:wqsuid,noexec,mode=1777\ 0\ 0/g' /etc/fstab
+fi
+
+fi [ -f "rm /etc/hosts.equiv" ]; then
+    rm /etc/hosts.equiv
 fi
 
 chgrp root /etc/group- && chgrp root /etc/gshadow- && chgrp root /etc/passwd- && chgrp shadow /etc/shadow-
@@ -460,7 +462,15 @@ chgrp root /etc/cron.weekly && chgrp root /etc/crontab && chown root /etc/cron.d
 chown root /etc/cron.daily && chown root /etc/cron.hourly && chown root /etc/cron.monthly
 chown root /etc/cron.weekly && chown root /etc/crontab && chmod 0700 /etc/cron.d
 chmod 0700 /etc/cron.daily && chmod 0700 /etc/cron.hourly && chmod 0700 /etc/cron.monthly
-chmod 0700 /etc/cron.weekly && chmod 0600 /etc/crontab && rm /etc/hosts.equiv
+chmod 0700 /etc/cron.weekly && chmod 0600 /etc/crontab
 chmod 0600 /etc/ssh/* && chmod 0640 /etc/ssh/*_key && chmod 0644 /etc/ssh/*.pub
 
+
+#######################
+
+if [ -f "$pwd/audit.rules" ]
+   mkdir -p /etc/audit/rules.d/
+   cp $pwd/audit.rules /etc/audit/rules.d/rules.rules
+   cp $pwd/audit.rules /etc/audit/rules.rules
+fi
 
