@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+userlist=('git')
+
 echo "The sudo use_pty tag, when specified, will only execute sudo commands from users logged in to a real tty. This should be enabled by making sure that the use_pty tag exists in /etc/sudoers configuration file or any sudo configuration snippets in /etc/sudoers.d/."
 
 if [ -f "/etc/issue" ]; then
@@ -309,11 +311,18 @@ MOTD_FILE
 #
 # Hash shadow passwords with SHA512.
 #
-ENCRYPT_METHOD	SHA512
+ENCRYPT_METHOD SHA512
+PASS_MAX_DAYS 365
+PASS_MIN_DAYS 1
+PASS_WARN_AGE 7
 EOF
 fi
 
-/etc/login.defs
+for item in ${userlist[@]}; do
+    if id -u $item >/dev/null 2>&1; then
+	sudo usermod -s /sbin/nologin $item
+    fi
+done
 
 if [ -f "" ]; then
     
