@@ -340,7 +340,7 @@ if [ -f "/usr/share/xsessions/i3.desktop" ]; then
 [Desktop Entry]
 Name=i3
 Comment=improved dynamic tiling window manager
-Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3
+Exec=i3
 Type=Application
 X-LightDM-DesktopName=i3
 DesktopNames=i3
@@ -353,11 +353,36 @@ if [ -f "/usr/share/xsessions/i3-with-shmlog.desktop" ]; then
 [Desktop Entry]
 Name=i3 (with debug log)
 Comment=improved dynamic tiling window manager
-Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3-with-shmlog
+Exec=i3-with-shmlog
 Type=Application
 Keywords=tiling;wm;windowmanager;window;manager;
 EOF
 fi
+
+
+#if [ -f "/usr/share/xsessions/i3.desktop" ]; then
+#    cat > /usr/share/xsessions/i3.desktop <<-EOF
+#[Desktop Entry]
+#Name=i3
+#Comment=improved dynamic tiling window manager
+#Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3
+#Type=Application
+#X-LightDM-DesktopName=i3
+#DesktopNames=i3
+#Keywords=tiling;wm;windowmanager;window;manager;
+#EOF
+#fi
+
+#if [ -f "/usr/share/xsessions/i3-with-shmlog.desktop" ]; then
+#    cat > /usr/share/xsessions/i3-with-shmlog.desktop <<-EOF
+#[Desktop Entry]
+#Name=i3 (with debug log)
+#Comment=improved dynamic tiling window manager
+#Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3-with-shmlog
+#Type=Application
+#Keywords=tiling;wm;windowmanager;window;manager;
+#EOF
+#fi
 
 chmod 750 /root/
 chmod 750 /home/$youruser/
@@ -493,7 +518,7 @@ chmod 0600 /etc/ssh/* && chmod 0640 /etc/ssh/*_key && chmod 0644 /etc/ssh/*.pub
 
 if [ -f "$pwd/audit.rules" ]; then
    mkdir -p /etc/audit/rules.d/
-   cp $pwd/audit.rules /etc/audit/rules.d/rules.rules
-   cp $pwd/audit.rules /etc/audit/rules.rules
+   cp --remove-destination audit.rules /etc/audit/rules.d/rules.rules
+#   cp $pwd/audit.rules /etc/audit/rules.rules
 fi
 

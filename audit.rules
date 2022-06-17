@@ -38,7 +38,7 @@
 -a always,exit -F arch=b64 -S creat -F exit=-EPERM -F auid>=1000 -F auid!=unset -F key=access
 -a always,exit -F arch=b32 -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=unset -F key=access
 -a always,exit -F arch=b32 -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=unset -F key=access
--a always,exit -F arch=b64 -S ftruncate -F exiu=-EACCES -F auid>=1000 -F auid!=unset -F key=access
+-a always,exit -F arch=b64 -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=unset -F key=access
 -a always,exit -F arch=b64 -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=unset -F key=access
 -a always,exit -F arch=b32 -S open -F exit=-EACCES -F auid>=1000 -F auid!=unset -F key=access
 -a always,exit -F arch=b32 -S open -F exit=-EPERM -F auid>=1000 -F auid!=unset -F key=access
@@ -60,8 +60,6 @@
 -a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules
 -a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change
 -a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change
--a always,exit -F arch=b32 -S stime -F key=audit_time_rules
--a always,exit -F arch=b64 -S stime -F key=audit_time_rules
 -a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=unset -F key=export
 -a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=unset -F key=export
 -a always,exit -F arch=b32 -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification
@@ -72,7 +70,6 @@
 -w /etc/issue -p wa -k audit_rules_networkconfig_modification
 -w /etc/issue.net -p wa -k audit_rules_networkconfig_modification
 -w /etc/hosts -p wa -k audit_rules_networkconfig_modification
--w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification
 -w /var/log/faillog -p wa -k logins
 -w /var/log/lastlog -p wa -k logins
 -w /var/log/tallylog -p wa -k logins
@@ -85,28 +82,22 @@
 -w /var/log/btmp -p wa -k session
 -w /var/log/wtmp -p wa -k session
 -w /etc/sudoers -p wa -k actions
+-w /etc/security/ -p wa -k actions
 -w /etc/sudoers.d/ -p wa -k actions
 -w /etc/group -p wa -k audit_rules_usergroup_modification
 -w /etc/gshadow -p wa -k audit_rules_usergroup_modification
--w /etc/security/opasswd -p wa -k audit_rules_usergroup_modificatio
 -w /etc/passwd -p wa -k audit_rules_usergroup_modification
 -w /etc/shadow -p wa -k audit_rules_usergroup_modification
 
--a always,exit -F path=/usr/bin/at -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/chage -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/chsh -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/crontab -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/gpasswd -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/passwd -F auid>=1000 -F auid!=unset -F key=privileged
--a always,exit -F path=/usr/bin/mount -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/newgidmap -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/newgrp -F auid>=1000 -F auid!=unset -F key=privileged
--a always,exit -F path=/usr/bin/newuidmap -F auid>=1000 -F auid!=unset -F key=privileged
--a always,exit -F path=/usr/sbin/postdrop -F auid>=1000 -F auid!=unset -F key=privileged
--a always,exit -F path=/usr/sbin/postqueue -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=unset -k privileged-ssh-agent
--a always,exit -F path=/usr/lib/openssh/ssh-keysign -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/su -F perm=x -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/sudo -F auid>=1000 -F auid!=unset -F key=privileged
 -a always,exit -F path=/usr/bin/sudoedit -F auid>=1000 -F auid!=unset -F key=privileged
