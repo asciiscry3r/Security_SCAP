@@ -50,7 +50,6 @@ if [ -f "/etc/pam.d/systemd-user" ]; then
 # Used by systemd --user instances.
 
 account  include system-login
-account  required pam_tally2.so
 session  required pam_loginuid.so
 session  include system-login
 EOF
@@ -69,7 +68,7 @@ auth       [default=die]               pam_faillock.so      authfail
 auth       optional                    pam_permit.so
 auth       required                    pam_env.so
 auth       required                    pam_faillock.so      authsucc
-auth       required                    pam_tally2.so onerr=fail silent audit deny=5
+auth       optional                    pam_faillock.so      delay=4000000
 # If you drop the above call to pam_faillock.so the lock will be done also
 # on non-consecutive authentication failures.
 
@@ -324,6 +323,7 @@ done
 
 if [ -f "/etc/pam.d/su" ]; then
     usermod -a -G wheel $youruser
+    groupadd sugroup
     cat > /etc/pam.d/su <<-EOF
 #%PAM-1.0
 auth            sufficient      pam_rootok.so
@@ -332,6 +332,30 @@ auth            required        pam_unix.so
 account         required        pam_unix.so
 session	        required        pam_unix.so
 password        include         system-auth
+EOF
+fi
+
+if [ -f "/usr/share/xsessions/i3.desktop" ]; then
+    cat > /usr/share/xsessions/i3.desktop <<-EOF
+[Desktop Entry]
+Name=i3
+Comment=improved dynamic tiling window manager
+Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3
+Type=Application
+X-LightDM-DesktopName=i3
+DesktopNames=i3
+Keywords=tiling;wm;windowmanager;window;manager;
+EOF
+fi
+
+if [ -f "/usr/share/xsessions/i3-with-shmlog.desktop" ]; then
+    cat > /usr/share/xsessions/i3-with-shmlog.desktop <<-EOF
+[Desktop Entry]
+Name=i3 (with debug log)
+Comment=improved dynamic tiling window manager
+Exec=/usr/bin/dbus-launch --sh-syntax --exit-with-session i3-with-shmlog
+Type=Application
+Keywords=tiling;wm;windowmanager;window;manager;
 EOF
 fi
 
@@ -435,15 +459,14 @@ install udf /bin/true
 EOF
 fi
 
-if [ -f "/etc/fstab" ] | [[ `grep -w '/dev/shm' /etc/fstab` == "" ]]; then
-    echo 'tmpfs /dev/shm tmpfs default,noatime,nosuid,mode=1777 0 0' >> /etc/fstab
+if [ -f "/etc/fstab" ] | [[ `grep -w '/tmp' /etc/fstab` == "/tmp" ]] || [[ `grep -w '/dev/shm' /etc/fstab` == "" ]] ; then
+    sed -i '/\/tmp/d' /etc/fstab
+    sed -i '/\/dev\/shm/d' /etc/fstab
+    echo 'tmpfs /dev/shm tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
+    echo 'tmpfs /tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
 fi
 
-if [ -f "/etc/fstab" ] | [[ `grep -w 'defaults,noatime,mode=1777' /etc/fstab` == "defaults,noatime,mode=1777" ]] ; then
-    sed -i 's/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,mode=1777\ 0\ 0/tmpfs\ \/tmp\ tmpfs\ defaults,noatime,no:wqsuid,noexec,mode=1777\ 0\ 0/g' /etc/fstab
-fi
-
-fi [ -f "rm /etc/hosts.equiv" ]; then
+if [ -f "rm /etc/hosts.equiv" ]; then
     rm /etc/hosts.equiv
 fi
 
@@ -468,7 +491,7 @@ chmod 0600 /etc/ssh/* && chmod 0640 /etc/ssh/*_key && chmod 0644 /etc/ssh/*.pub
 
 #######################
 
-if [ -f "$pwd/audit.rules" ]
+if [ -f "$pwd/audit.rules" ]; then
    mkdir -p /etc/audit/rules.d/
    cp $pwd/audit.rules /etc/audit/rules.d/rules.rules
    cp $pwd/audit.rules /etc/audit/rules.rules
