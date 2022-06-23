@@ -180,16 +180,20 @@ EOF
 	echo 'umask 027' >> /etc/csh.cshrc
     fi
 
-    if [ -f "/etc/profile" ] | `grep -r 'umask 02[0-9]' /etc/profile` == "umask 022"; then
+    if [ -f "/etc/profile" ] | [[ `grep -r 'umask 02[0-9]' /etc/profile` == "umask 022" ]]; then
 	sed -i 's/umask 022/umask 027/g' /etc/profile
     fi
 
-    if [ -f "/etc/csh.cshrc" ] | [[ `grep -w 'TMOUT=600' /etc/profile` == "" ]]; then
-	echo 'TMOUT=600' >> /etc/profile
+    if [ -f "/etc/csh.cshrc" ]; then
+       if [ `grep -w 'TMOUT=600' /etc/csh.cshrc` == "" ]; then
+	   echo 'TMOUT=600' >> /etc/csh.cshrc
+       fi
     fi
 
-    if [ -f "/etc/csh.login" ] | `grep -r 'umask 02[0-9]' /etc/csh.login` == "umask 022"; then
-	sed -i 's/umask 022/umask 027/g' /etc/csh.login
+    if [ -f "/etc/csh.login" ]; then
+	if [ `grep -r 'umask 02[0-9]' /etc/csh.login` == "umask 022" ]; then
+	    sed -i 's/umask 022/umask 027/g' /etc/csh.login
+	fi					  
     fi
 
     if [ -f "/etc/securetty" ]; then
