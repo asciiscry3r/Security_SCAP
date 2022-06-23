@@ -454,6 +454,8 @@ EOF
 	touch /etc/securetty
     fi
 
+    apt update && apt install -y apparmor-notify apparmor-profiles apparmor-profiles-extra apparmor-utils
+    
     if [ -d "/etc/apparmor.d/" ]; then
 	aa-enforce /etc/apparmor.d/*
     fi
