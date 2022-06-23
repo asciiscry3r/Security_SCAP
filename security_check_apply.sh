@@ -5,6 +5,9 @@ echo "The sudo use_pty tag, when specified, will only execute sudo commands from
 youruser="max"
 userlist=('git')
 
+chmod 750 /root/
+chmod 750 /home/*/
+
 distroname=`cat /etc/lsb-release | tr -d '"' | tr -s '[:space:]' '\n' | grep -E --text 'DISTRIB_ID=[A-Za-z ]*' |  tr -d 'DISTRIB_ID='`
 
 ##############################################################################################################
@@ -169,9 +172,6 @@ ENCRYPT_METHOD SHA512
 EOF
     fi
 
-    chmod 750 /root/
-    chmod 750 /home/$youruser/
-
     if [ -f "/etc/bash.bashrc" ] | [[ `grep -r 'umask 02[0-9]' /etc/bash.bashrc` == "" ]]; then
 	echo 'umask 027' >> /etc/bash.bashrc
     fi
@@ -185,13 +185,13 @@ EOF
     fi
 
     if [ -f "/etc/csh.cshrc" ]; then
-       if [ `grep -w 'TMOUT=600' /etc/csh.cshrc` == "" ]; then
+       if [[ `grep -w 'TMOUT=600' /etc/csh.cshrc` == "" ]]; then
 	   echo 'TMOUT=600' >> /etc/csh.cshrc
        fi
     fi
 
     if [ -f "/etc/csh.login" ]; then
-	if [ `grep -r 'umask 02[0-9]' /etc/csh.login` == "umask 022" ]; then
+	if [[ `grep -r 'umask 02[0-9]' /etc/csh.login` == "umask 022" ]]; then
 	    sed -i 's/umask 022/umask 027/g' /etc/csh.login
 	fi					  
     fi
@@ -426,9 +426,6 @@ session	        required        pam_unix.so
 password        include         system-auth
 EOF
     fi
-
-    chmod 750 /root/
-    chmod 750 /home/$youruser/
 
     if [ -f "/etc/bash.bashrc" ] | [[ `grep -r 'umask 02[0-9]' /etc/bash.bashrc` == "" ]]; then
 	echo 'umask 027' >> /etc/bash.bashrc
