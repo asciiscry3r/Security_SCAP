@@ -254,9 +254,11 @@ EOF
 
     if [ -f "/etc/fstab" ] | [[ `grep -w '/tmp' /etc/fstab` == "/tmp" ]] || [[ `grep -w '/dev/shm' /etc/fstab` == "" ]] ; then
 	sed -i '/\/tmp/d' /etc/fstab
+	sed -i '/\/var/tmp/d' /etcfstab
 	sed -i '/\/dev\/shm/d' /etc/fstab
 	echo 'tmpfs /dev/shm tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
 	echo 'tmpfs /tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
+	echo 'tmpfs /var/tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
     fi
 
     if [ -f "rm /etc/hosts.equiv" ]; then
@@ -528,9 +530,11 @@ EOF
 
     if [ -f "/etc/fstab" ] | [[ `grep -w '/tmp' /etc/fstab` == "/tmp" ]] || [[ `grep -w '/dev/shm' /etc/fstab` == "" ]] ; then
 	sed -i '/\/tmp/d' /etc/fstab
+	sed -i '/\/var/tmp/d' /etcfstab
 	sed -i '/\/dev\/shm/d' /etc/fstab
 	echo 'tmpfs /dev/shm tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
 	echo 'tmpfs /tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
+	echo 'tmpfs /var/tmp tmpfs defaults,noatime,nodev,nosuid,mode=1777 0 0' >> /etc/fstab
     fi
 
     if [ -f "rm /etc/hosts.equiv" ]; then
